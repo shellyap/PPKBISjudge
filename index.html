@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PPKBIS Showcase Judge Login</title>
-    <script src="https://cdn-tailwindcss.vercel.app/"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <!-- jsPDF Libraries for PDF Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -107,6 +108,15 @@
                                 <option value="Showcase 5 (Workshop)">Showcase 5 (Workshop)</option>
                             </select>
                         </div>
+                        <!-- NEW: Judge Group Selection -->
+                        <div id="judge-group-field" class="mb-6" style="display: none;">
+                            <label for="judge-group" class="block mb-2 text-sm font-medium text-gray-900">Select Your Group (Poster Presentation Only)</label>
+                            <select id="judge-group" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                                <option value="Group 1">Group 1</option>
+                                <option value="Group 2">Group 2</option>
+                                <option value="Group 3">Group 3</option>
+                            </select>
+                        </div>
                         <div id="admin-password-field" class="mb-6" style="display: none;">
                             <label for="password" class="block mb-2 text-sm font-medium text-gray-900">Admin Password</label>
                             <input type="password" id="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5" placeholder="•••••••••">
@@ -142,6 +152,15 @@
                                 <option value="Oral">Oral Presentation</option>
                                 <option value="Workshop">Workshop</option>
                             </select>
+                             <!-- NEW: Admin Judge Group Assignment -->
+                            <div id="candidate-judge-group-field" class="space-y-2" style="display: none;">
+                                <label for="candidate-judge-group" class="block text-sm font-medium text-gray-900">Assign Judge Group</label>
+                                <select id="candidate-judge-group" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
+                                    <option value="Group 1">Group 1</option>
+                                    <option value="Group 2">Group 2</option>
+                                    <option value="Group 3">Group 3</option>
+                                </select>
+                            </div>
                             <input type="number" id="candidate-order" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" placeholder="Order (e.g., 1, 2, 3)" required min="1">
                             <button type="submit" class="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5">Add Presenter</button>
                         </form>
@@ -154,7 +173,7 @@
                     
                     <div class="bg-white p-6 rounded-xl shadow-md">
                         <h2 class="text-2xl font-semibold mb-4">Judges Online</h2>
-                        <div id="judges-online-list" class="space-y-3"></div>
+                        <div id="judges-online-list" class="space-y-3 max-h-72 overflow-y-auto"></div>
                     </div>
 
                     <div class="bg-white p-6 rounded-xl shadow-md">
@@ -195,10 +214,11 @@
         </div>
 
         <div id="judge-view" class="view">
-             <header class="flex justify-between items-center mb-8">
+             <header class="flex flex-wrap justify-between items-center mb-8 gap-4">
                 <h1 id="judge-header" class="text-4xl font-bold text-gray-900">Judge Panel</h1>
                 <div class="flex items-center space-x-4">
                     <p id="current-session-display" class="text-xl font-semibold text-indigo-600"></p>
+                    <p id="current-group-display" class="text-xl font-semibold text-purple-600"></p>
                     <button id="judge-logout" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">Logout</button>
                 </div>
             </header>
@@ -217,7 +237,7 @@
                     
                     <div class="border-t pt-4">
                         <button id="final-submit-button" class="w-full text-white bg-green-600 hover:bg-green-700 font-medium rounded-lg text-sm px-5 py-2.5 disabled:opacity-50" disabled>
-                            Submit All Scores
+                            Submit All Group Scores
                         </button>
                     </div>
                 </div>
@@ -236,7 +256,7 @@
             <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">Confirm Action</h3>
             <div class="mt-2"><p class="text-sm text-gray-500" id="modal-message">Are you sure?</p></div>
             <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                <button id="modal-confirm-btn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:col-start-2 sm:text-sm">Confirm</button>
+                <button id="modal-confirm-btn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:col-start-2 sm:text-sm">Confirm</button>
                 <button id="modal-cancel-btn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:col-start-1 sm:text-sm">Cancel</button>
             </div>
         </div>
@@ -257,9 +277,9 @@
             ]).then((modules) => {
                 const { initializeApp } = modules[0];
                 const { getAuth, signInAnonymously, signInWithCustomToken } = modules[1];
-                const { getFirestore, doc, setDoc, addDoc, deleteDoc, onSnapshot, collection, serverTimestamp, writeBatch, getDocs, getDoc, query, where, orderBy } = modules[2];
+                const { getFirestore, doc, setDoc, addDoc, deleteDoc, onSnapshot, collection, serverTimestamp, writeBatch, getDocs, getDoc, query, where, orderBy, and } = modules[2];
 
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'ppkbis-judging-default';
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'ppkbis-global-showcase';
                 
                 const firebaseConfig = typeof __firebase_config !== 'undefined' 
                     ? JSON.parse(__firebase_config)
@@ -267,7 +287,7 @@
                         apiKey: "AIzaSyDCTebeG42Vj1G9TRIApiLhwfsxng5mP0Y",
                         authDomain: "ppkbis-shell.firebaseapp.com",
                         projectId: "ppkbis-shell",
-                        storageBucket: "ppkbis-shell.firebasestorage.app",
+                        storageBucket: "ppkbis-shell.appspot.com",
                         messagingSenderId: "942093342515",
                         appId: "1:942093342515:web:29a844b91ba357835a9046",
                         measurementId: "G-M5Q9NCD7JF"
@@ -283,7 +303,6 @@
                     } else { await signInAnonymously(auth); }
                     const userId = auth.currentUser?.uid || `anonymous-${crypto.randomUUID()}`;
 
-                    // UPDATED: New Session-to-Category mapping.
                     const SESSION_CATEGORY_MAP = {
                         'Showcase 1 (Poster 1st Session)': 'Poster',
                         'Showcase 2 (Oral 1st Session)': 'Oral',
@@ -291,6 +310,10 @@
                         'Showcase 4 (Oral 2nd Session)': 'Oral',
                         'Showcase 5 (Workshop)': 'Workshop'
                     };
+                    const GROUPED_SESSION_NAMES = [
+                        'Showcase 1 (Poster 1st Session)', 
+                        'Showcase 3 (Poster 2nd Session)'
+                    ];
                     const CATEGORIES = {
                         'Poster': [
                             { name: 'Content & Relevance', max: 35, desc: 'Clear coverage of 5 sections; relevant to ELT.' },
@@ -327,16 +350,14 @@
                     let unsubscribePresence = () => {};
                     let presenceInterval = null;
                     
-                    // Unified state for Admin Dashboard
+                    // Admin state
                     let adminCandidates = [];
                     let adminScores = [];
                     let adminFeedbacks = [];
                     
-                    // Judge state variables
-                    let currentJudgeSession = null;
+                    // Judge state
                     let allJudgeCandidates = [];
-                    let allJudgeScores = {};
-                    let isSubmittingScore = false; 
+                    let allJudgeScores = {}; // Keyed by candidateId, holds scores and feedback
                     let currentPresenterId = null; 
 
                     const views = { login: document.getElementById('login-view'), admin: document.getElementById('admin-view'), judge: document.getElementById('judge-view') };
@@ -344,6 +365,53 @@
                     function showView(viewName) {
                         Object.values(views).forEach(view => view.classList.remove('active'));
                         if (views[viewName]) views[viewName].classList.add('active');
+                    }
+                    
+                    // --- MODAL SYSTEM ---
+                    function showModal({ title, message, confirmText = 'Confirm', confirmClass = 'bg-indigo-600 hover:bg-indigo-700', cancelText = 'Cancel', showCancel = true }) {
+                        return new Promise((resolve) => {
+                            const modal = document.getElementById('confirmation-modal');
+                            modal.querySelector('#modal-title').textContent = title;
+                            modal.querySelector('#modal-message').textContent = message;
+                            
+                            const confirmBtn = modal.querySelector('#modal-confirm-btn');
+                            const cancelBtn = modal.querySelector('#modal-cancel-btn');
+                            
+                            confirmBtn.textContent = confirmText;
+                            cancelBtn.textContent = cancelText;
+
+                            // Reset and apply custom classes for the confirm button
+                            confirmBtn.className = 'w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white sm:col-start-2 sm:text-sm';
+                            confirmBtn.classList.add(...confirmClass.split(' '));
+
+                            if (showCancel) {
+                                cancelBtn.style.display = 'inline-flex';
+                                confirmBtn.classList.remove('sm:col-span-2');
+                            } else {
+                                cancelBtn.style.display = 'none';
+                                confirmBtn.classList.add('sm:col-span-2');
+                            }
+                            
+                            modal.classList.add('active');
+
+                            const close = (result) => {
+                                modal.classList.remove('active');
+                                confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+                                cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+                                resolve(result);
+                            };
+
+                            modal.querySelector('#modal-confirm-btn').onclick = () => close(true);
+                            modal.querySelector('#modal-cancel-btn').onclick = () => close(false);
+                        });
+                    }
+
+                    async function showConfirmationModal(title, message) {
+                        return await showModal({ title, message, confirmClass: 'bg-red-600 hover:bg-red-700' });
+                    }
+
+                    async function showNotification(title, message) {
+                        await showModal({ title, message, confirmText: 'OK', showCancel: false });
                     }
 
                     function updateCategoryDropdown(sessionValue) {
@@ -366,27 +434,42 @@
                         const username = document.getElementById('username').value.trim();
                         const role = document.getElementById('role').value;
                         const session = document.getElementById('session').value;
-                        if (!username) { alert("Please enter your name."); return; }
-                        if (role === 'judge' && !session) { alert("Please select a session."); return; }
+                        const judgeGroup = document.getElementById('judge-group').value;
+
+                        if (!username) { await showNotification("Login Error", "Please enter your name."); return; }
+                        if (role === 'judge' && !session) { await showNotification("Login Error", "Please select a session."); return; }
 
                         if (role === 'admin') {
                             const password = document.getElementById('password').value;
                             if (password !== 'admin123') {
-                                alert('Incorrect admin password.');
+                                await showNotification("Login Error", "Incorrect admin password.");
                                 return;
                             }
                         }
                         
-                        currentJudgeSession = role === 'judge' ? session : null;
-                        
-                        currentUser = { id: `${username.replace(/\s+/g, '-')}-${userId.substring(0,4)}`, name: username, role, session: currentJudgeSession };
+                        currentUser = { 
+                            id: `${username.replace(/\s+/g, '-')}-${userId.substring(0,4)}`, 
+                            name: username, 
+                            role, 
+                            session: role === 'judge' ? session : null,
+                            judgeGroup: (role === 'judge' && GROUPED_SESSION_NAMES.includes(session)) ? judgeGroup : null,
+                        };
                         
                         if (role === 'admin') { 
                             showView('admin'); 
                             initAdminView(); 
                         } else { 
                             document.getElementById('judge-header').textContent = `Judge Panel - ${currentUser.name}`;
-                            document.getElementById('current-session-display').textContent = `Session: ${currentJudgeSession}`;
+                            document.getElementById('current-session-display').textContent = `Session: ${currentUser.session}`;
+                            
+                            const groupDisplay = document.getElementById('current-group-display');
+                            if (currentUser.judgeGroup) {
+                                groupDisplay.textContent = `Group: ${currentUser.judgeGroup}`;
+                                groupDisplay.style.display = 'block';
+                            } else {
+                                groupDisplay.style.display = 'none';
+                            }
+
                             await updatePresence();
                             presenceInterval = setInterval(updatePresence, 20000); 
                             showView('judge'); 
@@ -404,16 +487,17 @@
                         unsubscribeFeedbacks();
                         unsubscribePresence();
                         currentUser = null;
-                        currentJudgeSession = null;
                         currentPresenterId = null;
+                        allJudgeScores = {};
+                        allJudgeCandidates = [];
                         document.getElementById('username').value = '';
-                        // UPDATED: Reset login dropdown to the first new session name
                         document.getElementById('session').value = 'Showcase 1 (Poster 1st Session)';
+                        document.getElementById('judge-group-field').style.display = 'block'; // Reset for next login
                         showView('login');
                     }
 
                     // --- ADMIN VIEW LOGIC ---
-                     function renderOnlineJudges(presenceDocs) {
+                    function renderOnlineJudges(presenceDocs) {
                          const listEl = document.getElementById('judges-online-list');
                          if(!listEl) return;
                          listEl.innerHTML = '';
@@ -460,9 +544,10 @@
                         const candidateName = candidateNameInput.value.trim();
                         const session = document.getElementById('candidate-session').value;
                         const order = parseInt(document.getElementById('candidate-order').value, 10);
-                        
+                        const judgeGroup = document.getElementById('candidate-judge-group').value;
+
                         if (!candidateName || !session || isNaN(order)) { 
-                            alert("Please fill all fields correctly."); 
+                            await showNotification("Add Presenter Error", "Please fill all fields correctly."); 
                             return; 
                         }
 
@@ -471,16 +556,22 @@
 
                         const existing = adminCandidates.find(c => c.session === session && c.orderIndex === orderIndex);
                         if (existing) {
-                            alert(`Order number ${orderIndex} already exists in ${session}. Please use a different number.`);
+                            await showNotification("Add Presenter Error", `Order number ${orderIndex} already exists in ${session}. Please use a different number.`);
                             return;
                         }
                         
-                        await addDoc(collection(db, `artifacts/${appId}/public/data/candidates`), { 
+                        const newCandidate = { 
                             name: candidateName, 
                             session: session,
                             category: category,
                             orderIndex: orderIndex
-                        });
+                        };
+
+                        if (GROUPED_SESSION_NAMES.includes(session)) {
+                            newCandidate.judgeGroup = judgeGroup;
+                        }
+
+                        await addDoc(collection(db, `artifacts/${appId}/public/data/candidates`), newCandidate);
 
                         candidateNameInput.value = '';
                         document.getElementById('candidate-order').value = '';
@@ -489,17 +580,13 @@
                     async function deleteCandidate(candidateId) {
                         if (await showConfirmationModal('Delete Presenter', `This will delete the presenter and ALL associated scores and feedback. Are you sure?`)) {
                             const batch = writeBatch(db);
-
                             batch.delete(doc(db, `artifacts/${appId}/public/data/candidates`, candidateId));
-
                             const scoresQuery = query(collection(db, `artifacts/${appId}/public/data/scores`), where("candidateId", "==", candidateId));
                             const scoresSnapshot = await getDocs(scoresQuery);
                             scoresSnapshot.docs.forEach(d => batch.delete(d.ref));
-
                             const feedbackQuery = query(collection(db, `artifacts/${appId}/public/data/feedback`), where("candidateId", "==", candidateId));
                             const feedbackSnapshot = await getDocs(feedbackQuery);
                             feedbackSnapshot.docs.forEach(d => batch.delete(d.ref));
-
                             await batch.commit();
                         }
                     }
@@ -509,7 +596,6 @@
                         
                         const listEl = evt.from;
                         const newOrder = Array.from(listEl.children).map(item => item.dataset.id);
-
                         const batch = writeBatch(db);
                         
                         newOrder.forEach((candidateId, index) => {
@@ -522,7 +608,7 @@
                             await batch.commit();
                         } catch (error) {
                             console.error("Error committing batch reorder:", error);
-                            alert("Failed to save new order. Please try again.");
+                            await showNotification("Error", "Failed to save new order. Please try again.");
                         }
                     }
 
@@ -536,11 +622,7 @@
                                 animation: 150,
                                 ghostClass: 'bg-indigo-100',
                                 handle: '.drag-handle',
-                                group: {
-                                    name: 'sessions',
-                                    pull: false, 
-                                    put: false
-                                },
+                                group: 'sessions',
                                 onEnd: handlePresenterReorder,
                             });
                         });
@@ -557,30 +639,24 @@
                         });
 
                         candidates.forEach(c => {
-                            const sessionKey = c.session || 'zz_Unassigned Session';
-                            if (!sessions[sessionKey]) {
-                                sessions[sessionKey] = [];
-                            }
-                            sessions[sessionKey].push(c);
+                            if (!sessions[c.session]) sessions[c.session] = [];
+                            sessions[c.session].push(c);
                         });
 
-                        const sessionKeys = Object.keys(sessions).sort();
+                        const sessionKeys = Object.keys(sessions);
 
-                        if (candidates.length === 0 && sessionKeys.length === 0) {
+                        if (candidates.length === 0) {
                             listEl.innerHTML = '<p class="text-gray-500">No presenters added yet.</p>';
                             return;
                         }
 
                         sessionKeys.forEach(sessionKey => {
-                            const displayKey = sessionKey.startsWith('zz_') ? sessionKey.substring(3) : sessionKey;
-                            
                             const sessionGroup = document.createElement('div');
                             sessionGroup.className = 'mb-4 border-b border-indigo-200 pb-2';
-                            sessionGroup.innerHTML = `<h4 class="text-lg font-semibold text-indigo-700 mb-2">${displayKey}</h4>`;
+                            sessionGroup.innerHTML = `<h4 class="text-lg font-semibold text-indigo-700 mb-2">${sessionKey}</h4>`;
                             
                             const ulList = document.createElement('ul');
                             ulList.className = 'space-y-1 sortable-session-list';
-                            ulList.id = `sortable-${sessionKey.replace(/\W/g, '-')}`;
                             ulList.dataset.session = sessionKey;
 
                             if (sessions[sessionKey].length > 0) {
@@ -590,13 +666,14 @@
                                     li.dataset.id = c.id;
                                     li.dataset.session = c.session;
     
+                                    const groupChip = c.judgeGroup ? `<span class="ml-2 text-xs text-purple-600 bg-purple-200 px-2 py-1 rounded-full">${c.judgeGroup}</span>` : '';
+
                                     li.innerHTML = `<div class="flex justify-between items-center p-2">
                                         <div class="flex items-center space-x-3 drag-handle text-gray-400 hover:text-gray-600 cursor-grab">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                <path d="M10 3a1 1 0 011 1v2a1 1 0 11-2 0V4a1 1 0 011-1zM7 7a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zM4 11a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM7 15a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zM10 18a1 1 0 011-1v2a1 1 0 11-2 0v-2a1 1 0 011 1z"/>
-                                            </svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 5h10v10H5V5z"/><path d="M7 9a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z"/></svg>
                                             <span class="text-sm font-medium text-gray-900">${c.orderIndex || '-'}. ${c.name}</span>
                                             <span class="ml-2 text-xs text-gray-600 bg-gray-200 px-2 py-1 rounded-full">${c.category}</span>
+                                            ${groupChip}
                                         </div>
                                         <button data-id="${c.id}" class="delete-candidate-btn text-red-500 hover:text-red-700 text-xs font-bold">DELETE</button>
                                     </div>`;
@@ -604,7 +681,7 @@
                                     ulList.appendChild(li);
                                 });
                             } else {
-                                ulList.innerHTML = `<p class="text-sm text-gray-400 italic px-2">No presenters assigned to this session yet.</p>`;
+                                ulList.innerHTML = `<p class="text-sm text-gray-400 italic px-2">No presenters assigned.</p>`;
                             }
 
                             sessionGroup.appendChild(ulList);
@@ -618,10 +695,6 @@
                         });
                     }
                     
-                    /**
-                     * A reusable function to determine winners based on ranking caps.
-                     * This ensures consistency between the live dashboard and the PDF report.
-                     */
                     function calculateWinners(fullyJudgedResults) {
                         const categoryWinners = {};
                         const winnerMap = new Map();
@@ -637,9 +710,7 @@
                             const silverWinners = remainingForSilver.slice(0, caps.silver);
                             const silverWinnerIds = new Set(silverWinners.map(w => w.id));
 
-                            const bronzeWinners = catResults.filter(r => {
-                                return !goldWinnerIds.has(r.id) && !silverWinnerIds.has(r.id) && r.average >= 55;
-                            });
+                            const bronzeWinners = catResults.filter(r => !goldWinnerIds.has(r.id) && !silverWinnerIds.has(r.id) && r.average >= 55);
 
                             categoryWinners[cat] = { gold: goldWinners, silver: silverWinners, bronze: bronzeWinners };
 
@@ -668,92 +739,67 @@
                             return { ...c, scoresByJudge, average: parseFloat(average.toFixed(2)), judgeCount, award: '-' };
                         });
 
-                        const fullyJudged = results.filter(r => r.judgeCount === FIXED_JUDGE_COUNT);
+                        const fullyJudged = results.filter(r => r.judgeCount >= FIXED_JUDGE_COUNT);
                         
-                        // Use the consistent winner calculation function
                         const { categoryWinners, winnerMap } = calculateWinners(fullyJudged);
                         
                         results.forEach(r => {
                             if(winnerMap.has(r.id)) r.award = winnerMap.get(r.id).level;
                         });
 
-                        const rankings = results.sort((a, b) => {
-                             if (b.average !== a.average) return b.average - a.average;
-                             if (a.session !== b.session) return (a.session || "").localeCompare(b.session || "");
-                             return (a.orderIndex || 0) - (b.orderIndex || 0);
-                        });
+                        const rankings = results.sort((a, b) => b.average - a.average);
 
-                        // --- Render Winner Board (Real-Time Update) ---
+                        // Render Winner Board
                         const winnersBoard = document.getElementById('winners-board');
                         if(!winnersBoard) return;
                         winnersBoard.innerHTML = '';
                         
-                        // 1. Grand Winner Section
+                        // Grand Winner
                         const overallRanking = fullyJudged.sort((a,b) => b.average - a.average);
                         const grandWinners = overallRanking.slice(0, 3);
-
-                        let grandWinnerHTML = `<div class="text-center p-6 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-lg mb-8">
-                            <h3 class="text-2xl font-bold text-white uppercase tracking-wider">Top 3 Grand Winners (Highest Average Score)</h3>`;
+                        let grandWinnerHTML = `<div class="text-center p-6 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-lg mb-8"><h3 class="text-2xl font-bold text-white uppercase tracking-wider">Top 3 Grand Winners</h3>`;
                         if (grandWinners.length > 0) {
-                             grandWinnerHTML += `<div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-white">`;
-                             const places = ['1st Place', '2nd Place', '3rd Place'];
-                             grandWinners.forEach((winner, index) => {
-                                 grandWinnerHTML += `<div>
-                                     <p class="text-lg font-bold">${places[index]}</p>
-                                     <p class="text-2xl font-extrabold">${winner.name}</p>
-                                     <p class="text-md font-medium text-indigo-200">(${winner.category}) - ${winner.average.toFixed(2)}</p>
-                                 </div>`;
-                             });
-                             grandWinnerHTML += `</div>`;
+                            grandWinnerHTML += `<div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-white">`;
+                            const places = ['1st Place', '2nd Place', '3rd Place'];
+                            grandWinners.forEach((winner, index) => {
+                                grandWinnerHTML += `<div><p class="text-lg font-bold">${places[index]}</p><p class="text-2xl font-extrabold">${winner.name}</p><p class="text-md font-medium text-indigo-200">(${winner.category}) - ${winner.average.toFixed(2)}</p></div>`;
+                            });
+                            grandWinnerHTML += `</div>`;
                         } else {
                             grandWinnerHTML += `<p class="text-xl font-semibold text-white mt-2">- Awaiting ${FIXED_JUDGE_COUNT} scores -</p>`;
                         }
                         grandWinnerHTML += `</div>`;
                         winnersBoard.innerHTML += grandWinnerHTML;
                         
-                        // 2. Category Winners Section (Real-Time Update)
+                        // Category Winners
                         winnersBoard.innerHTML += `<h3 class="text-xl font-bold text-gray-900 mb-4">Winners by Category (Minimum ${FIXED_JUDGE_COUNT} Judges)</h3>`;
-                        
                         const categoryCardContainer = document.createElement('div');
                         categoryCardContainer.className = 'grid grid-cols-1 md:grid-cols-3 gap-4';
-
                         CATEGORY_NAMES.forEach(cat => {
                             const catData = categoryWinners[cat];
                             const caps = AWARD_CAPS[cat];
-                            
                             const renderCategoryTier = (title, winners, colorClass) => {
                                 let html = `<div class="mt-2"><p class="font-medium text-sm text-gray-700">${title} (${winners.length}):</p>`;
                                 if (winners.length > 0) {
-                                    html += `<div class="flex flex-wrap gap-2 pt-1">` + winners.map(w =>
-                                        `<span class="px-3 py-1 text-xs font-semibold rounded-full ${colorClass} text-white">${w.name} (${w.average.toFixed(2)})</span>`
-                                    ).join('') + `</div>`;
+                                    html += `<div class="flex flex-wrap gap-2 pt-1">` + winners.map(w => `<span class="px-3 py-1 text-xs font-semibold rounded-full ${colorClass} text-white">${w.name} (${w.average.toFixed(2)})</span>`).join('') + `</div>`;
                                 } else {
                                     html += `<p class="text-xs text-gray-500 italic">None finalized.</p>`;
                                 }
                                 html += `</div>`;
                                 return html;
                             };
-
-                            let categoryHTML = `<div class="bg-gray-100 p-4 rounded-lg shadow-sm h-full flex flex-col">
-                                <h4 class="text-xl font-bold text-indigo-700 mb-3 border-b pb-2">${cat}</h4>
-                                ${renderCategoryTier(`Gold (Top ${caps.gold})`, catData.gold, 'bg-yellow-600')}
-                                ${renderCategoryTier(`Silver (Next ${caps.silver})`, catData.silver, 'bg-gray-500')}
-                                ${renderCategoryTier('Bronze (>=55)', catData.bronze, 'bg-amber-700')}
-                            </div>`;
-                            
-                            categoryCardContainer.innerHTML += categoryHTML;
+                            categoryCardContainer.innerHTML += `<div class="bg-gray-100 p-4 rounded-lg shadow-sm h-full flex flex-col"><h4 class="text-xl font-bold text-indigo-700 mb-3 border-b pb-2">${cat}</h4>${renderCategoryTier(`Gold (Top ${caps.gold})`, catData.gold, 'bg-yellow-600')}${renderCategoryTier(`Silver (Next ${caps.silver})`, catData.silver, 'bg-gray-500')}${renderCategoryTier('Bronze (>=55)', catData.bronze, 'bg-amber-700')}</div>`;
                         });
                         winnersBoard.appendChild(categoryCardContainer);
 
-
-                        // --- Render Rankings Table (Real-Time Update) ---
+                        // Render Rankings Table
                         const tableHeader = document.getElementById('rankings-header');
                         if(!tableHeader) return;
                         tableHeader.innerHTML = `<tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Presenter</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Session/Category</th>
                             ${judges.map(j => `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${j}</th>`).join('')}
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judges Submitted</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judges</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Average</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Award</th>
                         </tr>`;
@@ -763,12 +809,7 @@
                         rankingsBody.innerHTML = '';
                         rankings.forEach(r => {
                             const awardInfo = winnerMap.get(r.id);
-                            let awardClass = '';
-                            if (awardInfo) {
-                                awardClass = awardInfo.level === 'Gold' ? 'bg-yellow-400 text-white' : 
-                                             (awardInfo.level === 'Silver' ? 'bg-gray-400 text-white' : 'bg-yellow-600 text-white');
-                            }
-                            
+                            const awardClass = awardInfo ? awardInfo.class : '';
                             const row = document.createElement('tr');
                             row.innerHTML = `<td class="px-6 py-4 whitespace-nowrap font-medium">${r.orderIndex ? `${r.orderIndex}. ` : ''}${r.name}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${r.session || r.category}</td>
@@ -779,59 +820,58 @@
                             rankingsBody.appendChild(row);
                         });
 
-                        // --- Render Detailed Feedback Board (Real-Time Update) ---
+                        // Render Detailed Feedback Board
                         const feedbackBoard = document.getElementById('feedback-details-board');
                         if(!feedbackBoard) return;
                         feedbackBoard.innerHTML = '';
-
                         const judgeMap = new Map();
                         scores.forEach(s => { if (!judgeMap.has(s.judgeId)) judgeMap.set(s.judgeId, s.judgeName) });
-
                         const augmentedFeedbacks = feedbacks.map(f => ({ ...f, judgeName: judgeMap.get(f.judgeId) || 'Unknown' }));
-
+                        
                         if (rankings.length === 0) {
                             feedbackBoard.innerHTML = '<p class="text-gray-500">No presenters have been scored yet.</p>';
-                        } else {
-                            rankings.forEach(candidate => {
-                                const feedbackForCandidate = augmentedFeedbacks.filter(f => f.candidateId === candidate.id);
-                                const judgesWhoScored = Object.keys(candidate.scoresByJudge).filter(j => (candidate.scoresByJudge[j] || 0) > 0);
+                            return;
+                        } 
 
-                                let candidateFeedbackHTML = `<div class="bg-gray-50 p-4 rounded-lg"><h3 class="text-lg font-bold text-indigo-700">${candidate.orderIndex ? `${candidate.orderIndex}. ` : ''}${candidate.name}</h3><div class="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
-
-                                if (judgesWhoScored.length > 0) {
-                                    judgesWhoScored.forEach(judgeName => {
-                                        const judgeFeedback = feedbackForCandidate.find(f => f.judgeName === judgeName);
-                                        const feedbackText = (judgeFeedback && judgeFeedback.feedbackText) ? judgeFeedback.feedbackText : 'No feedback submitted.';
-                                        
-                                        candidateFeedbackHTML += `<div class="bg-white p-3 rounded-md shadow-sm">
-                                            <div class="flex justify-between items-center border-b pb-2 mb-2">
-                                                <p class="font-semibold text-gray-800">${judgeName}</p>
-                                                <p class="font-bold text-gray-600">Score: ${candidate.scoresByJudge[judgeName]}</p>
-                                            </div>
-                                            <p class="text-sm text-gray-600 italic">"${feedbackText}"</p>
-                                        </div>`;
-                                    });
-                                } else {
-                                    candidateFeedbackHTML += `<p class="text-sm text-gray-500 col-span-full">No scores or feedback submitted yet for this presenter.</p>`;
-                                }
-                                candidateFeedbackHTML += `</div></div>`;
-                                feedbackBoard.innerHTML += candidateFeedbackHTML;
-                            });
-                        }
+                        CATEGORY_NAMES.forEach(category => {
+                            const categorySection = document.createElement('div');
+                            categorySection.className = 'mb-8';
+                            const presentersInCategory = rankings.filter(r => r.category === category).sort((a,b) => (a.session||"").localeCompare(b.session||"") || (a.orderIndex||0) - (b.orderIndex||0));
+                            let categoryHTML = `<h3 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">${category} Presentations</h3>`;
+                            if (presentersInCategory.length > 0) {
+                                presentersInCategory.forEach(candidate => {
+                                    const feedbackForCandidate = augmentedFeedbacks.filter(f => f.candidateId === candidate.id);
+                                    const judgesWhoScored = Object.keys(candidate.scoresByJudge).filter(j => (candidate.scoresByJudge[j] || 0) > 0);
+                                    categoryHTML += `<div class="bg-gray-50 p-4 rounded-lg mb-4"><h4 class="text-lg font-bold text-indigo-700">${candidate.orderIndex ? `${candidate.orderIndex}. ` : ''}${candidate.name} <span class="text-sm font-medium text-gray-500">- ${candidate.session}</span></h4><div class="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
+                                    if (judgesWhoScored.length > 0) {
+                                        judgesWhoScored.forEach(judgeName => {
+                                            const judgeFeedback = feedbackForCandidate.find(f => f.judgeName === judgeName);
+                                            const feedbackText = (judgeFeedback && judgeFeedback.feedbackText) ? judgeFeedback.feedbackText : 'No feedback submitted.';
+                                            categoryHTML += `<div class="bg-white p-3 rounded-md shadow-sm"><div class="flex justify-between items-center border-b pb-2 mb-2"><p class="font-semibold text-gray-800">${judgeName}</p><p class="font-bold text-gray-600">Score: ${candidate.scoresByJudge[judgeName]}</p></div><p class="text-sm text-gray-600 italic">"${feedbackText}"</p></div>`;
+                                        });
+                                    } else {
+                                        categoryHTML += `<p class="text-sm text-gray-500 col-span-full">No scores submitted yet.</p>`;
+                                    }
+                                    categoryHTML += `</div></div>`;
+                                });
+                            } else {
+                                categoryHTML += `<p class="text-gray-500 italic">No presenters scored in this category yet.</p>`;
+                            }
+                            categorySection.innerHTML = categoryHTML;
+                            feedbackBoard.appendChild(categorySection);
+                        });
                     }
                     
                     async function resetScores() {
                          if (await showConfirmationModal('Reset All Scores Only?', 'This will delete ALL scores and feedback but will keep the list of presenters. This action is irreversible.')) {
                              const scoresQuery = query(collection(db, `artifacts/${appId}/public/data/scores`));
                              const feedbackQuery = query(collection(db, `artifacts/${appId}/public/data/feedback`));
-
                              const [scoresSnapshot, feedbackSnapshot] = await Promise.all([getDocs(scoresQuery), getDocs(feedbackQuery)]);
-
                              const batch = writeBatch(db);
                              scoresSnapshot.docs.forEach(d => batch.delete(d.ref));
                              feedbackSnapshot.docs.forEach(d => batch.delete(d.ref));
                              await batch.commit();
-                             alert('All scores and feedback have been reset.');
+                             await showNotification("Success", "All scores and feedback have been reset.");
                            }
                     }
                     
@@ -842,30 +882,69 @@
                                 getDocs(query(collection(db, `artifacts/${appId}/public/data/scores`))),
                                 getDocs(query(collection(db, `artifacts/${appId}/public/data/feedback`)))
                             ]);
-
                             const batch = writeBatch(db);
                             candidatesSnapshot.docs.forEach(d => batch.delete(d.ref));
                             scoresSnapshot.docs.forEach(d => batch.delete(d.ref));
                             feedbackSnapshot.docs.forEach(d => batch.delete(d.ref));
                             await batch.commit();
-                            alert('The entire event has been reset.');
+                            await showNotification("Success", "The entire event has been reset.");
                         }
                     }
 
                     // --- JUDGE VIEW LOGIC ---
-
                     function initJudgeView() {
-                        const candidatesQuery = query(collection(db, `artifacts/${appId}/public/data/candidates`), where("session", "==", currentJudgeSession));
-                        unsubscribeCandidates = onSnapshot(candidatesQuery, (snapshot) => {
-                            allJudgeCandidates = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                            allJudgeCandidates.sort((a,b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+                        // Reset state for new login
+                        unsubscribeCandidates();
+                        unsubscribeScores();
+                        unsubscribeFeedbacks();
+                        allJudgeScores = {};
+                        
+                        let candidatesQuery;
+                        if (GROUPED_SESSION_NAMES.includes(currentUser.session) && currentUser.judgeGroup) {
+                            candidatesQuery = query(collection(db, `artifacts/${appId}/public/data/candidates`), 
+                                and(
+                                    where("session", "==", currentUser.session),
+                                    where("judgeGroup", "==", currentUser.judgeGroup)
+                                )
+                            );
+                        } else {
+                            candidatesQuery = query(collection(db, `artifacts/${appId}/public/data/candidates`), 
+                                where("session", "==", currentUser.session)
+                            );
+                        }
 
-                            if (allJudgeCandidates.length > 0 && !currentPresenterId) {
-                                currentPresenterId = allJudgeCandidates[0].id;
+                        unsubscribeCandidates = onSnapshot(candidatesQuery, (snapshot) => {
+                            allJudgeCandidates = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+                            const presenterExists = allJudgeCandidates.some(c => c.id === currentPresenterId);
+                            if (!presenterExists) {
+                                currentPresenterId = allJudgeCandidates.length > 0 ? allJudgeCandidates[0].id : null;
                             }
                             renderJudgeSidebar();
                             renderCurrentPresenterCard();
                             checkFinalSubmissionStatus();
+                        });
+                        
+                        // IMPORTANT: These listeners ensure a judge ONLY ever sees their own scores.
+                        const scoresQuery = query(collection(db, `artifacts/${appId}/public/data/scores`), where("judgeId", "==", currentUser.id));
+                        unsubscribeScores = onSnapshot(scoresQuery, (snapshot) => {
+                            snapshot.docs.forEach(doc => {
+                                const score = doc.data();
+                                if (!allJudgeScores[score.candidateId]) allJudgeScores[score.candidateId] = {};
+                                allJudgeScores[score.candidateId][score.category] = score.score;
+                            });
+                            updateAllScoreStatusIndicators();
+                            renderCurrentPresenterCard();
+                            checkFinalSubmissionStatus();
+                        });
+
+                        const feedbackQuery = query(collection(db, `artifacts/${appId}/public/data/feedback`), where("judgeId", "==", currentUser.id));
+                        unsubscribeFeedbacks = onSnapshot(feedbackQuery, (snapshot) => {
+                            snapshot.docs.forEach(doc => {
+                                const feedback = doc.data();
+                                if (!allJudgeScores[feedback.candidateId]) allJudgeScores[feedback.candidateId] = {};
+                                allJudgeScores[feedback.candidateId].feedbackText = feedback.feedbackText;
+                            });
+                            renderCurrentPresenterCard();
                         });
                     }
 
@@ -873,18 +952,15 @@
                         const listEl = document.getElementById('judge-sidebar-list');
                         if (!listEl) return;
                         listEl.innerHTML = '';
-
                         if (allJudgeCandidates.length === 0) {
-                            listEl.innerHTML = `<p class="text-gray-500 text-sm">No presenters in this session.</p>`;
+                            listEl.innerHTML = `<p class="text-gray-500 text-sm">No presenters assigned to your group in this session.</p>`;
                             return;
                         }
-
                         allJudgeCandidates.forEach(c => {
                             const div = document.createElement('div');
                             div.className = `sidebar-item p-3 rounded-md flex justify-between items-center ${currentPresenterId === c.id ? 'active-card' : ''}`;
                             div.dataset.id = c.id;
-                            div.innerHTML = `<span>${c.orderIndex}. ${c.name}</span>
-                                <span class="score-status-indicator" data-candidate-id="${c.id}"></span>`;
+                            div.innerHTML = `<span>${c.orderIndex}. ${c.name}</span><span class="score-status-indicator" data-candidate-id="${c.id}"></span>`;
                             div.onclick = () => {
                                 currentPresenterId = c.id;
                                 renderJudgeSidebar();
@@ -896,100 +972,72 @@
                     }
 
                     function updateAllScoreStatusIndicators() {
-                        allJudgeCandidates.forEach(c => {
-                             updateScoreStatusIndicator(c.id);
-                        });
+                        allJudgeCandidates.forEach(c => updateScoreStatusIndicator(c.id));
                     }
 
                     function updateScoreStatusIndicator(candidateId) {
                         const indicator = document.querySelector(`.score-status-indicator[data-candidate-id="${candidateId}"]`);
                         if (!indicator) return;
-
                         const candidate = allJudgeCandidates.find(c => c.id === candidateId);
                         if (!candidate) return;
-
                         const scores = allJudgeScores[candidateId];
                         const criteria = CATEGORIES[candidate.category];
                         const isScored = scores && criteria.every(crit => scores[crit.name] !== null && scores[crit.name] !== undefined);
-                        
-                        indicator.innerHTML = isScored 
-                            ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>`
-                            : '';
+                        indicator.innerHTML = isScored ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>` : '';
                     }
 
                     function renderCurrentPresenterCard() {
                         const cardContainer = document.getElementById('judge-presenter-card');
                         if (!cardContainer) return;
-
                         if (!currentPresenterId || allJudgeCandidates.length === 0) {
                             cardContainer.innerHTML = `<p class="text-center text-gray-500 text-xl" id="judge-status-message">Select a presenter from the list to begin scoring.</p>`;
                             return;
                         }
-
                         const presenter = allJudgeCandidates.find(p => p.id === currentPresenterId);
                         if (!presenter) {
-                             cardContainer.innerHTML = `<p class="text-center text-gray-500 text-xl">Error: Presenter not found.</p>`;
-                             return;
+                            cardContainer.innerHTML = `<p class="text-center text-gray-500 text-xl">Error: Presenter not found.</p>`;
+                            return;
                         }
-
                         const criteria = CATEGORIES[presenter.category];
                         const maxTotal = criteria.reduce((sum, crit) => sum + crit.max, 0);
-
                         const criteriaHTML = criteria.map(crit => {
                             const fieldId = `score-${presenter.id}-${crit.name.replace(/\W/g, '-')}`;
+                            // This ensures only THIS judge's scores are shown
                             const existingScore = (allJudgeScores[presenter.id] && (allJudgeScores[presenter.id][crit.name] !== null && allJudgeScores[presenter.id][crit.name] !== undefined)) ? allJudgeScores[presenter.id][crit.name] : '';
-                            return `<div class="space-y-1">
-                                <div class="flex justify-between items-center">
-                                    <label for="${fieldId}" class="text-sm font-medium text-gray-800">${crit.name} (Max: ${crit.max})</label>
-                                    <input type="number" id="${fieldId}" name="${crit.name}" value="${existingScore}" data-max="${crit.max}" min="0" max="${crit.max}" class="score-input w-20 text-center bg-gray-50 border border-gray-300 text-sm rounded-lg p-1.5" required>
-                                </div>
-                                <p class="text-xs text-gray-500">${crit.desc}</p>
-                            </div>`;
+                            return `<div class="space-y-1"><div class="flex justify-between items-center"><label for="${fieldId}" class="text-sm font-medium text-gray-800">${crit.name} (Max: ${crit.max})</label><input type="number" id="${fieldId}" name="${crit.name}" value="${existingScore}" data-max="${crit.max}" min="0" max="${crit.max}" class="score-input w-20 text-center bg-gray-50 border border-gray-300 text-sm rounded-lg p-1.5" required></div><p class="text-xs text-gray-500">${crit.desc}</p></div>`;
                         }).join('');
                         
                         const existingFeedback = (allJudgeScores[presenter.id] && allJudgeScores[presenter.id].feedbackText) || '';
+                        
+                        const currentIndex = allJudgeCandidates.findIndex(c => c.id === presenter.id);
+                        const isLastPresenter = currentIndex === allJudgeCandidates.length - 1;
+                        const buttonText = isLastPresenter ? 'Save Final Score for Group' : 'Save & Next';
 
-                        cardContainer.innerHTML = `
-                            <h2 class="text-3xl font-bold mb-1">${presenter.orderIndex}. ${presenter.name}</h2>
-                            <p class="text-md text-gray-500 mb-6">${presenter.session}</p>
-                            <form data-candidate-id="${presenter.id}" class="candidate-score-form space-y-4">
-                                <div class="space-y-4">${criteriaHTML}</div>
-                                <div class="text-right font-bold text-lg pt-4 border-t">Total: <span class="total-score">0</span> / ${maxTotal}</div>
-                                <div class="mt-4 pt-4 border-t">
-                                    <label for="feedback-${presenter.id}" class="block text-sm font-medium text-gray-700 mb-1">Feedback</label>
-                                    <textarea id="feedback-${presenter.id}" rows="3" class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2">${existingFeedback}</textarea>
-                                </div>
-                                <button type="submit" class="w-full mt-4 text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg text-sm px-5 py-2.5">Save & Next</button>
-                            </form>
-                        `;
-
+                        cardContainer.innerHTML = `<h2 class="text-3xl font-bold mb-1">${presenter.orderIndex}. ${presenter.name}</h2><p class="text-md text-gray-500 mb-6">${presenter.session}</p><form data-candidate-id="${presenter.id}" class="candidate-score-form space-y-4"><div class="space-y-4">${criteriaHTML}</div><div class="text-right font-bold text-lg pt-4 border-t">Total: <span class="total-score">0</span> / ${maxTotal}</div><div class="mt-4 pt-4 border-t"><label for="feedback-${presenter.id}" class="block text-sm font-medium text-gray-700 mb-1">Feedback</label><textarea id="feedback-${presenter.id}" rows="3" class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2">${existingFeedback}</textarea></div><button type="submit" class="w-full mt-4 text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg text-sm px-5 py-2.5">${buttonText}</button></form>`;
                         const form = cardContainer.querySelector('form');
-                        updateLiveTotal(form); // Initial calculation
+                        updateLiveTotal(form);
                         form.addEventListener('input', (e) => {
-                             if (e.target.classList.contains('score-input')) {
-                                 const input = e.target;
-                                 const max = parseInt(input.dataset.max, 10);
-                                 if (parseInt(input.value) > max) input.value = max;
-                                 if (parseInt(input.value) < 0) input.value = 0;
-                                 updateLiveTotal(form);
-                             }
+                            if (e.target.classList.contains('score-input')) {
+                                const input = e.target;
+                                const max = parseInt(input.dataset.max, 10);
+                                if (parseInt(input.value) > max) input.value = max;
+                                if (parseInt(input.value) < 0) input.value = 0;
+                                updateLiveTotal(form);
+                            }
                         });
                         form.addEventListener('submit', handleScoreSave);
                     }
                     
                     function updateLiveTotal(form) {
-                          let total = 0;
-                          form.querySelectorAll('.score-input').forEach(i => { total += parseInt(i.value, 10) || 0; });
-                          form.querySelector('.total-score').textContent = total;
+                         let total = 0;
+                         form.querySelectorAll('.score-input').forEach(i => { total += parseInt(i.value, 10) || 0; });
+                         form.querySelector('.total-score').textContent = total;
                     }
                     
                     async function handleScoreSave(e) {
                         e.preventDefault();
-                        if (isSubmittingScore) return;
-                        
                         const form = e.target;
                         const candidateId = form.dataset.candidateId;
-                        
                         let isComplete = true;
                         
                         const batch = writeBatch(db);
@@ -998,20 +1046,19 @@
 
                         const criteria = CATEGORIES[candidate.category];
                         criteria.forEach(crit => {
-                             const input = form.querySelector(`[name="${crit.name}"]`);
-                             const score = parseInt(input.value, 10);
-                             if (isNaN(score)) {
-                                 isComplete = false;
-                             } else {
-                                 const scoreId = `${candidateId}-${currentUser.id}-${crit.name.replace(/\W/g, '-')}`;
-                                 const scoreRef = doc(db, `artifacts/${appId}/public/data/scores`, scoreId);
-                                 batch.set(scoreRef, { candidateId, judgeId: currentUser.id, judgeName: currentUser.name, category: crit.name, score: score });
-                             }
+                            const input = form.querySelector(`[name="${crit.name}"]`);
+                            const score = parseInt(input.value, 10);
+                            if (isNaN(score)) {
+                                isComplete = false;
+                            } else {
+                                const scoreId = `${candidateId}-${currentUser.id}-${crit.name.replace(/\W/g, '-')}`;
+                                const scoreRef = doc(db, `artifacts/${appId}/public/data/scores`, scoreId);
+                                batch.set(scoreRef, { candidateId, judgeId: currentUser.id, judgeName: currentUser.name, category: crit.name, score: score });
+                            }
                         });
 
-
                         if (!isComplete) {
-                            alert('Please fill in all score fields for this presenter before moving to the next.');
+                            await showNotification("Incomplete Form", "Please fill in all score fields for this presenter before saving.");
                             return;
                         }
 
@@ -1022,227 +1069,204 @@
                         
                         try {
                             await batch.commit();
-                            updatePresence(); // Refresh online status on activity
+                            updatePresence();
                             
                             // Immediately update local state
                             const scores = {};
-                             criteria.forEach(crit => {
-                                 const input = form.querySelector(`[name="${crit.name}"]`);
-                                 scores[crit.name] = parseInt(input.value, 10);
-                             });
+                            criteria.forEach(crit => {
+                                scores[crit.name] = parseInt(form.querySelector(`[name="${crit.name}"]`).value, 10);
+                            });
                             scores.feedbackText = feedbackText;
                             allJudgeScores[candidateId] = scores;
 
-
-                            // Move to the next presenter
                             const currentIndex = allJudgeCandidates.findIndex(c => c.id === candidateId);
                             if (currentIndex < allJudgeCandidates.length - 1) {
                                 currentPresenterId = allJudgeCandidates[currentIndex + 1].id;
                                 renderCurrentPresenterCard();
                             } else {
-                                alert('All presenters for this session have been scored. Review your scores and then click "Submit All Scores".');
+                                await showNotification("Group Complete", "All presenters for your group have been scored. You can now review your scores or click 'Submit All Group Scores'.");
                             }
                             renderJudgeSidebar();
                             checkFinalSubmissionStatus();
 
                         } catch(err) {
                             console.error("Error saving score:", err);
-                            alert("There was an error saving the score. Please try again.");
+                            await showNotification("Error", "There was an error saving the score. Please try again.");
                         }
                     }
                     
                     function checkFinalSubmissionStatus() {
                         const submitButton = document.getElementById('final-submit-button');
                         if(!submitButton) return;
-
+                        if(allJudgeCandidates.length === 0) {
+                            submitButton.disabled = true;
+                            return;
+                        }
                         const allScored = allJudgeCandidates.every(c => {
                            const scores = allJudgeScores[c.id];
                            if (!scores) return false;
                            const criteria = CATEGORIES[c.category];
                            return criteria.every(crit => scores[crit.name] !== null && scores[crit.name] !== undefined);
                         });
-
                         submitButton.disabled = !allScored;
                     }
                     
                     async function handleFinalSubmit() {
-                        const confirmationMessage = `You are confirming that all scores for this session are final. This action cannot be undone. Are you sure?`;
-                        if (await showConfirmationModal('Final Submission', confirmationMessage)) {
+                        const confirmationMessage = `You are confirming that all scores for your assigned group are final. This action cannot be undone. Are you sure?`;
+                        if (await showModal({title: 'Final Group Submission', message: confirmationMessage, confirmText: 'Confirm & Submit'})) {
                             const submitButton = document.getElementById('final-submit-button');
                             submitButton.textContent = 'SUBMITTED';
                             submitButton.disabled = true;
                             submitButton.classList.remove('bg-green-600', 'hover:bg-green-700');
                             submitButton.classList.add('bg-gray-400', 'cursor-not-allowed');
-
-                             document.getElementById('judge-presenter-card').innerHTML = `<p class="text-center text-2xl text-green-600 font-bold">Thank you! Your scores for this session have been submitted.</p>`;
-                             // Optionally disable sidebar clicks
-                             document.querySelectorAll('.sidebar-item').forEach(item => item.style.pointerEvents = 'none');
+                            document.getElementById('judge-presenter-card').innerHTML = `<p class="text-center text-2xl text-green-600 font-bold">Thank you! Your scores for this group have been submitted.</p>`;
+                            document.querySelectorAll('.sidebar-item').forEach(item => item.style.pointerEvents = 'none');
                         }
-                    }
-
-                    function showConfirmationModal(title, message) {
-                        return new Promise((resolve) => {
-                            const modal = document.getElementById('confirmation-modal');
-                            modal.querySelector('#modal-title').textContent = title;
-                            modal.querySelector('#modal-message').textContent = message;
-                            modal.classList.add('active');
-                            const confirmBtn = modal.querySelector('#modal-confirm-btn');
-                            const cancelBtn = modal.querySelector('#modal-cancel-btn');
-                            const close = (result) => {
-                                modal.classList.remove('active');
-                                confirmBtn.replaceWith(confirmBtn.cloneNode(true));
-                                cancelBtn.replaceWith(cancelBtn.cloneNode(true));
-                                resolve(result);
-                            };
-                            modal.querySelector('#modal-confirm-btn').onclick = () => close(true);
-                            modal.querySelector('#modal-cancel-btn').onclick = () => close(false);
-                        });
                     }
                     
                     function generatePDF() {
                         const { jsPDF } = window.jspdf;
-                        const doc = new jsPDF();
+                        const docPDF = new jsPDF();
                         let y = 15;
 
-                        doc.setFontSize(22);
-                        doc.text("PPKBIS Showcase - Official Results", 105, y, { align: 'center' });
+                        docPDF.setFontSize(22);
+                        docPDF.text("PPKBIS Showcase - Official Results", 105, y, { align: 'center' });
                         y += 10;
-                        doc.setFontSize(12);
-                        doc.text(new Date().toLocaleString(), 105, y, { align: 'center' });
+                        docPDF.setFontSize(12);
+                        docPDF.text(new Date().toLocaleString(), 105, y, { align: 'center' });
                         y += 15;
                         
-                        // --- Data processing for PDF ---
+                        // Data processing for PDF
                         const results = adminCandidates.map(c => {
-                             const scoresByJudge = {};
-                             const judges = [...new Set(adminScores.map(s => s.judgeName))];
-                             judges.forEach(j => {
-                                 const judgeScores = adminScores.filter(s => s.candidateId === c.id && s.judgeName === j);
-                                 scoresByJudge[j] = judgeScores.reduce((sum, s) => sum + (s.score || 0), 0);
-                             });
-                             const totalScores = Object.values(scoresByJudge).filter(s => s > 0);
-                             const judgeCount = totalScores.length;
-                             const average = judgeCount > 0 ? totalScores.reduce((a, b) => a + b, 0) / judgeCount : 0;
-                             return { ...c, scoresByJudge, average, judgeCount };
+                            const scoresByJudge = {};
+                            const judges = [...new Set(adminScores.map(s => s.judgeName))];
+                            judges.forEach(j => {
+                                const judgeScores = adminScores.filter(s => s.candidateId === c.id && s.judgeName === j);
+                                scoresByJudge[j] = judgeScores.reduce((sum, s) => sum + (s.score || 0), 0);
+                            });
+                            const totalScores = Object.values(scoresByJudge).filter(s => s > 0);
+                            const judgeCount = totalScores.length;
+                            const average = judgeCount > 0 ? totalScores.reduce((a, b) => a + b, 0) / judgeCount : 0;
+                            return { ...c, scoresByJudge, average, judgeCount };
                         });
-                        const fullyJudged = results.filter(r => r.judgeCount === FIXED_JUDGE_COUNT);
-
+                        const fullyJudged = results.filter(r => r.judgeCount >= FIXED_JUDGE_COUNT);
                         const { categoryWinners } = calculateWinners(fullyJudged);
                         const grandWinners = [...fullyJudged].sort((a,b) => b.average - a.average).slice(0, 3);
 
-
-                        // --- Winners Summary Section ---
-                        doc.setFontSize(16);
-                        doc.text("Winners Summary", 14, y);
+                        // Winners Summary Section
+                        docPDF.setFontSize(16);
+                        docPDF.text("Winners Summary", 14, y);
                         y += 8;
-
-                        doc.setFontSize(12);
-                        doc.text("Top 3 Grand Winners:", 14, y);
+                        docPDF.setFontSize(12);
+                        docPDF.text("Top 3 Grand Winners:", 14, y);
                         y += 6;
-                        doc.setFontSize(10);
+                        docPDF.setFontSize(10);
                         if (grandWinners.length > 0) {
                             grandWinners.forEach((winner, index) => {
-                                doc.text(`${index + 1}. ${winner.name} (${winner.category}) - Avg: ${winner.average.toFixed(2)}`, 18, y);
+                                docPDF.text(`${index + 1}. ${winner.name} (${winner.category}) - Avg: ${winner.average.toFixed(2)}`, 18, y);
                                 y += 6;
                             });
                         } else {
-                            doc.text("N/A - Awaiting scores from all judges.", 18, y);
+                            docPDF.text("N/A - Awaiting scores from all judges.", 18, y);
                             y += 6;
                         }
                         y += 4;
                         
                         Object.keys(categoryWinners).forEach(cat => {
-                            if (y > 270) { doc.addPage(); y = 15; }
+                            if (y > 270) { docPDF.addPage(); y = 15; }
                             const winners = categoryWinners[cat];
-                            doc.setFontSize(12);
-                            doc.text(`${cat} Category Winners:`, 14, y);
+                            docPDF.setFontSize(12);
+                            docPDF.text(`${cat} Category Winners:`, 14, y);
                             y += 6;
-                            doc.setFontSize(10);
-                            doc.text(`Gold: ${winners.gold.map(w => w.name).join(', ') || 'None'}`, 18, y);
-                            y += 6;
-                            doc.text(`Silver: ${winners.silver.map(w => w.name).join(', ') || 'None'}`, 18, y);
-                            y += 6;
-                            doc.text(`Bronze: ${winners.bronze.map(w => w.name).join(', ') || 'None'}`, 18, y);
-                            y += 10;
+                            docPDF.setFontSize(10);
+                            docPDF.text(`Gold: ${winners.gold.map(w => w.name).join(', ') || 'None'}`, 18, y); y += 6;
+                            docPDF.text(`Silver: ${winners.silver.map(w => w.name).join(', ') || 'None'}`, 18, y); y += 6;
+                            docPDF.text(`Bronze: ${winners.bronze.map(w => w.name).join(', ') || 'None'}`, 18, y); y += 10;
                         });
 
-                        // --- Rankings Table Section ---
-                        doc.addPage();
+                        // Rankings Table
+                        docPDF.addPage();
                         y = 15;
-                        doc.setFontSize(16);
-                        doc.text("Overall Rankings", 14, y);
+                        docPDF.setFontSize(16);
+                        docPDF.text("Overall Rankings", 14, y);
                         y += 8;
-                        
                         const allJudges = [...new Set(adminScores.map(s => s.judgeName))].sort();
-                        const { winnerMap } = calculateWinners(fullyJudged); // Recalculate to get the map
-
+                        const { winnerMap } = calculateWinners(fullyJudged);
                         const head = [['#', 'Presenter', 'Session', ...allJudges, 'Avg.', 'Award']];
-                        const body = results.sort((a,b) => b.average - a.average).map(r => {
-                            const award = winnerMap.get(r.id)?.level || '-';
-                            return [
-                                r.orderIndex,
-                                r.name,
-                                r.session,
-                                ...allJudges.map(j => r.scoresByJudge[j] || '-'),
-                                r.average.toFixed(2),
-                                award
-                            ];
-                        });
-
-                        doc.autoTable({ startY: y, head, body });
+                        const body = results.sort((a,b) => b.average - a.average).map(r => [ r.orderIndex, r.name, r.session, ...allJudges.map(j => r.scoresByJudge[j] || '-'), r.average.toFixed(2), winnerMap.get(r.id)?.level || '-' ]);
+                        docPDF.autoTable({ startY: y, head, body });
                         
-                        // --- Feedback Section ---
-                        doc.addPage();
+                        // Feedback Section
+                        docPDF.addPage();
                         y = 15;
-                        doc.setFontSize(16);
-                        doc.text("Detailed Feedback", 14, y);
+                        docPDF.setFontSize(16);
+                        docPDF.text("Detailed Feedback", 14, y);
                         y+= 8;
-                        
                         adminCandidates.sort((a,b) => (a.session||"").localeCompare(b.session||"") || (a.orderIndex||0) - (b.orderIndex||0)).forEach(c => {
-                           const feedbacksForCandidate = adminFeedbacks.filter(f => f.candidateId === c.id);
-                           if (y > 270) {
-                               doc.addPage();
-                               y = 15;
-                           }
-                           doc.setFontSize(12);
-                           doc.text(`${c.orderIndex}. ${c.name} (${c.session})`, 14, y);
-                           y += 6;
-                           doc.setFontSize(10);
-                           if (feedbacksForCandidate.length > 0) {
-                               feedbacksForCandidate.forEach(f => {
-                                   if (y > 280) { doc.addPage(); y = 15; }
-                                   const judgeName = [...new Set(adminScores.filter(s => s.judgeId === f.judgeId).map(s => s.judgeName))][0] || 'Unknown Judge';
-                                   const textLines = doc.splitTextToSize(`${judgeName}: ${f.feedbackText || 'No feedback submitted.'}`, 170);
-                                   doc.text(textLines, 18, y);
-                                   y += (textLines.length * 4) + 2;
-                               });
-                           } else {
-                               doc.text(`No feedback submitted for this presenter.`, 18, y);
-                               y+=5;
-                           }
-                           y+=4;
+                            const feedbacksForCandidate = adminFeedbacks.filter(f => f.candidateId === c.id);
+                            if (y > 270) { docPDF.addPage(); y = 15; }
+                            docPDF.setFontSize(12);
+                            docPDF.text(`${c.orderIndex}. ${c.name} (${c.session})`, 14, y);
+                            y += 6;
+                            docPDF.setFontSize(10);
+                            if (feedbacksForCandidate.length > 0) {
+                                feedbacksForCandidate.forEach(f => {
+                                    if (y > 280) { docPDF.addPage(); y = 15; }
+                                    const judgeName = [...new Set(adminScores.filter(s => s.judgeId === f.judgeId).map(s => s.judgeName))][0] || 'Unknown Judge';
+                                    const textLines = docPDF.splitTextToSize(`${judgeName}: ${f.feedbackText || 'No feedback submitted.'}`, 170);
+                                    docPDF.text(textLines, 18, y);
+                                    y += (textLines.length * 4) + 2;
+                                });
+                            } else {
+                                docPDF.text(`No feedback submitted for this presenter.`, 18, y);
+                                y+=5;
+                            }
+                            y+=4;
                         });
 
+                        docPDF.save('PPKBIS_Showcase_Results.pdf');
+                    }
 
-                        doc.save('PPKBIS_Showcase_Results.pdf');
+                    // --- Conditional UI Logic ---
+                    function toggleJudgeGroupFields() {
+                        const sessionSelect = document.getElementById('session');
+                        const judgeGroupField = document.getElementById('judge-group-field');
+                        
+                        if (GROUPED_SESSION_NAMES.includes(sessionSelect.value)) {
+                            judgeGroupField.style.display = 'block';
+                        } else {
+                            judgeGroupField.style.display = 'none';
+                        }
+                    }
+
+                    function toggleAdminGroupFields() {
+                        const sessionSelect = document.getElementById('candidate-session');
+                        const judgeGroupField = document.getElementById('candidate-judge-group-field');
+
+                        if(GROUPED_SESSION_NAMES.includes(sessionSelect.value)) {
+                            judgeGroupField.style.display = 'block';
+                        } else {
+                            judgeGroupField.style.display = 'none';
+                        }
                     }
                     
                     // --- Initial Event Listeners ---
                     document.getElementById('login-form').addEventListener('submit', handleLogin);
                     document.getElementById('role').addEventListener('change', (e) => {
-                        const passwordField = document.getElementById('admin-password-field');
-                        passwordField.style.display = e.target.value === 'admin' ? 'block' : 'none';
-                        document.getElementById('session-field').style.display = e.target.value === 'judge' ? 'block' : 'none';
+                        const isAdmin = e.target.value === 'admin';
+                        document.getElementById('admin-password-field').style.display = isAdmin ? 'block' : 'none';
+                        document.getElementById('session-field').style.display = !isAdmin ? 'block' : 'none';
+                        document.getElementById('judge-group-field').style.display = (!isAdmin && GROUPED_SESSION_NAMES.includes(document.getElementById('session').value)) ? 'block' : 'none';
                     });
+                    document.getElementById('session').addEventListener('change', toggleJudgeGroupFields);
                     
                     const candidateSessionSelect = document.getElementById('candidate-session');
                     if(candidateSessionSelect) {
                         candidateSessionSelect.addEventListener('change', (e) => {
                             updateCategoryDropdown(e.target.value);
+                            toggleAdminGroupFields();
                         });
-                        // Initialize based on default or first value
-                        if(candidateSessionSelect.value) {
-                           updateCategoryDropdown(candidateSessionSelect.value);
-                        }
+                        if(candidateSessionSelect.value) updateCategoryDropdown(candidateSessionSelect.value);
                     }
 
                     document.getElementById('add-candidate-form').addEventListener('submit', handleAddCandidate);
@@ -1255,6 +1279,9 @@
                     const finalSubmitBtn = document.getElementById('final-submit-button');
                     if(finalSubmitBtn) finalSubmitBtn.addEventListener('click', handleFinalSubmit);
                     
+                    // Initial state setup
+                    toggleJudgeGroupFields();
+                    toggleAdminGroupFields();
                     showView('login');
                 })();
             });
@@ -1262,3 +1289,4 @@
     </script>
 </body>
 </html>
+
